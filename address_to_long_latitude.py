@@ -36,7 +36,7 @@ for row in load_ws.rows:
 
 	print(geolist)
 
-		## cell 설정 [ B1 ~ B* : 위도 / C1 ~ C* : 경도]
+		## cell 설정 [ E1 : 위도 / F1 : 경도]
 	lat_cell = load_ws.cell(row=rowCount, column=5)
 	lng_cell = load_ws.cell(row=rowCount, column=6)
 	lat_cell.value = geolist[0]
