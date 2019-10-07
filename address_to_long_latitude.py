@@ -17,6 +17,7 @@ api_key = "여기에 구글 geocoder API키만 입력하세요."
 rowCount = 1
 for row in load_ws.rows:
 	#예외처리.
+	#엑셀에 있는 123번째 컬럼 값을 가져옴. 주소를 보다 구체화 하기위해 엑셀하나로도 가능.
 	try:
 		address = load_ws.cell(rowCount, 1).value +" "+ load_ws.cell(rowCount, 2).value +" "+ load_ws.cell(rowCount, 3).value +" "+ load_ws.cell(rowCount, 4).value
 		print(address)
