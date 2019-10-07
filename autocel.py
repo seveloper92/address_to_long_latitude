@@ -1,29 +1,50 @@
-import requests
 from openpyxl import load_workbook
+import requests
 import json
-from urllib.request import urlopen
-#여기서 엑셀파일 가져오고
-api_key = "여기에 구글 geocoder API키만 입력하세요."
-address = "서울시 강남구 역삼동 동사무소"
-request = requests.get("https://maps.googleapis.com/maps/api/geocode/json?address="+address+"%20110&language=ko&sensor=false&key="+api_key)
-data = request.text
-search_result = json.loads(data)
-print(search_result)
-# 반복문으로 상세주소 뺴오기.
-address_list = []
-for i in range(len(search_result['results'])):
-    address_list.append(search_result['results'][i]['formatted_address'])
 
-#0번은 일반주소 1번은 도로명주소.
-print(address_list[0])
+load_wb = load_workbook("address_to.xlsx", data_only=True)
+# 시트 이름으로 불러오기 시트 스펠링 대소문자 주의.
+load_ws = load_wb['sheet1']
+api_key = "API키를 이곳에 입력하세요"
+# 셀 주소로 값 출력
+# print(load_ws['A1'].value)
 
-geolist = []
-for j in range(len(search_result['results'])):
-    geolist.append(search_result['results'][j]['geometry']['location']['lat'])
-    geolist.append(search_result['results'][j]['geometry']['location']['lng'])
+# 셀 좌표로 값 출력
+# print(load_ws.cell(1, 1).value)
+## 데이터 가져오기
 
-#0~1번은 기본주소의 위경도
-#2~3번은 도로명주소의 위경도.
-print(geolist[0])
-print(geolist[1])
-#여기선 엘셀파일에 넣어준다.
+rowCount = 1
+for row in load_ws.rows:
+    # 예외처리.
+    try:
+        address = load_ws.cell(rowCount, 1).value + " " + load_ws.cell(rowCount, 2).value + " " + load_ws.cell(rowCount,
+                                                                                                               3).value + " " + load_ws.cell(
+            rowCount, 4).value
+        print(address)
+    except:
+        break
+    # 구글에 정보요청
+    request = requests.get(
+        "https://maps.googleapis.com/maps/api/geocode/json?address=" + address + "%20110&language=ko&sensor=false&key=" + api_key)
+    data = request.text
+    # 정보 json가공
+    search_result = json.loads(data)
+
+    geolist = []
+    # 위경도값을 가져온다.
+    for j in range(len(search_result['results'])):
+        geolist.append(search_result['results'][j]['geometry']['location']['lat'])
+        geolist.append(search_result['results'][j]['geometry']['location']['lng'])
+
+    print(geolist)
+    if not geolist:
+        geolist = [1, 1]
+    ## cell 설정 [ B1 ~ B* : 위도 / C1 ~ C* : 경도]
+    lat_cell = load_ws.cell(row=rowCount, column=5)
+    lng_cell = load_ws.cell(row=rowCount, column=6)
+    lat_cell.value = geolist[0]
+    lng_cell.value = geolist[1]
+    rowCount += 1
+
+## 데이터 저장
+load_wb.save("address_to_test.xlsx")
